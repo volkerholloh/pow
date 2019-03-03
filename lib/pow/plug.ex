@@ -163,12 +163,6 @@ defmodule Pow.Plug do
     {:error, changeset, conn}
   end
 
-  # TODO: Remove by 1.1.0
-  @doc false
-  @deprecated "Use `get_plug/1` instead"
-  @spec get_mod(Config.t()) :: atom()
-  def get_mod(config), do: get_plug(config)
-
   @spec get_plug(Config.t()) :: atom()
   def get_plug(config) do
     config[:plug] || no_plug_error()

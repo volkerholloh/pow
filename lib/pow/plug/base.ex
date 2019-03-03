@@ -65,11 +65,7 @@ defmodule Pow.Plug.Base do
         |> maybe_fetch_user(conn, config)
       end
 
-      defp put_plug(config) do
-        config
-        |> Config.put(:plug, __MODULE__)
-        |> Config.put(:mod, __MODULE__) # TODO: Remove by 1.1.0, this is only for backwards compability
-      end
+      defp put_plug(config), do: Config.put(config, :plug, __MODULE__)
 
       @doc """
       Calls `fetch/2` and assigns the current user.

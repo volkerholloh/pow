@@ -12,8 +12,4 @@ defmodule PowResetPassword.Ecto.Context do
     |> Schema.reset_password_changeset(params)
     |> Context.do_update(config)
   end
-
-  # TODO: Remove by 1.1.0
-  @deprecated "Use `PowResetPassword.Ecto.Schema.reset_password_changeset/2` instead"
-  def password_changeset(user, params), do: Schema.reset_password_changeset(user, params)
 end

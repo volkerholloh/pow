@@ -36,7 +36,7 @@ defmodule PowPersistentSession.Plug.CookieTest do
 
   test "call/2 sets pow_persistent_session plug in conn", %{conn: conn, config: config} do
     conn            = Cookie.call(conn, Cookie.init([]))
-    expected_config = [mod: Session, plug: Session] ++ config
+    expected_config = [plug: Session] ++ config
 
     assert {Cookie, ^expected_config} = conn.private[:pow_persistent_session]
     refute conn.resp_cookies["persistent_session_cookie"]

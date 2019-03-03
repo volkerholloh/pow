@@ -116,9 +116,6 @@ defmodule Pow.Phoenix.Router do
     |> case do
       %{plug_opts: plug_opts, helper: helper} -> any_matching_routes?(phoenix_routes, %{plug_opts: plug_opts, helper: helper})
 
-      # TODO: Remove this match by 1.1.0, and up requirement for Phoenix to minimum 1.4.7
-      %{opts: plug_opts, helper: helper}      -> any_matching_routes?(phoenix_routes, %{opts: plug_opts, helper: helper})
-
       _any                                    -> false
     end
   end

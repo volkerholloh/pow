@@ -174,17 +174,8 @@ defmodule PowPersistentSession.Plug.Cookie do
   end
 
   defp max_age(config) do
-    # TODO: Remove by 1.1.0
-    case Config.get(config, :persistent_session_cookie_max_age) do
-      nil ->
-        config
-        |> PowPersistentSession.Plug.Base.ttl()
-        |> Integer.floor_div(1000)
-
-      max_age ->
-        IO.warn("use of `:persistent_session_cookie_max_age` config value in #{inspect unquote(__MODULE__)} is deprecated, please use `:persistent_session_ttl`")
-
-        max_age
-    end
+    config
+    |> PowPersistentSession.Plug.Base.ttl()
+    |> Integer.floor_div(1000)
   end
 end
