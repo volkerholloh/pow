@@ -65,6 +65,8 @@ defmodule Pow.Store.Backend.EtsCache do
     invalidators = update_invalidators(config, invalidators, key)
     table_update(config, key, value)
 
+    Pow.telemetry_event(config, __MODULE__, :cache, %{}, %{key: key, value: value})
+
     {:noreply, %{state | invalidators: invalidators}}
   end
 
@@ -72,6 +74,8 @@ defmodule Pow.Store.Backend.EtsCache do
   def handle_cast({:delete, config, key}, %{invalidators: invalidators} = state) do
     invalidators = clear_invalidator(invalidators, key)
     table_delete(config, key)
+
+    Pow.telemetry_event(config, __MODULE__, :delete, %{}, %{key: key})
 
     {:noreply, %{state | invalidators: invalidators}}
   end
@@ -82,6 +86,8 @@ defmodule Pow.Store.Backend.EtsCache do
     invalidators = clear_invalidator(invalidators, key)
 
     table_delete(config, key)
+
+    Pow.telemetry_event(config, __MODULE__, :invalidate, %{}, %{key: key})
 
     {:noreply, %{state | invalidators: invalidators}}
   end

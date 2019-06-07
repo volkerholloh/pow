@@ -6,6 +6,11 @@
 * All links in docs generated with `mix docs` and on [hexdocs.pm](http://hexdocs.pm/pow/) now works
 * Generated docs now uses lower case file name except for `README`, `CONTRIBUTING` and `CHANGELOG`
 * Removed duplicate call for `Pow.Plug.Session.delete/2` in `Pow.Plug.Sesssion.create/3`
+* `:telemetry` events are now dispatched for the following events:
+  * When session is created or renewed in `Pow.Plug.Session.create/3`
+  * When session is deleted in `Pow.Plug.Session.delete/2`
+  * When key value store is deleted, created or invalidated in `Pow.Store.Backend.EtsCache`
+  * When key value store is deleted, created or invalidated in `Pow.Store.Backend.MnesiaCache`
 
 ## v1.0.9 (2019-06-04)
 

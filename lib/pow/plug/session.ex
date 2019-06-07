@@ -2,6 +2,9 @@ defmodule Pow.Plug.Session do
   @moduledoc """
   This plug will handle user authorization using session.
 
+  Telemetry events are dispatched for the lifecycle of the sessions. See
+  `Pow.telemetry_event/5` for more.
+
   ## Example
 
       plug Plug.Session,
@@ -83,15 +86,28 @@ defmodule Pow.Plug.Session do
     session_key           = session_key(config)
     {store, store_config} = store(config)
     value                 = session_value(user)
+    previous_key          = Conn.get_session(conn, session_key)
 
     store.put(store_config, key, value)
 
     conn =
       conn
-      |> delete(config)
+      |> delete_session(store, store_config, previous_key, session_key)
       |> Conn.put_session(session_key, key)
+      |> log_create(config, user, key, previous_key)
 
     {conn, user}
+  end
+
+  defp log_create(conn, config, user, key, nil) do
+    Pow.telemetry_event(config, __MODULE__, :create, %{}, %{conn: conn, user: user, session_key: key})
+
+    conn
+  end
+  defp log_create(conn, config, user, key, previous_key) do
+    Pow.telemetry_event(config, __MODULE__, :renew, %{}, %{conn: conn, user: user, session_key: key, previous_session_key: previous_key})
+
+    conn
   end
 
   @doc """
@@ -109,9 +125,21 @@ defmodule Pow.Plug.Session do
     {store, store_config} = store(config)
     session_key           = session_key(config)
 
+    conn
+    |> delete_session(store, store_config, key, session_key)
+    |> log_delete(config, session_key)
+  end
+
+  defp delete_session(conn, store, store_config, key, session_key) do
     store.delete(store_config, key)
 
     Conn.delete_session(conn, session_key)
+  end
+
+  defp log_delete(conn, config, key) do
+    Pow.telemetry_event(config, __MODULE__, :delete, %{}, %{conn: conn, session_key: key})
+
+    conn
   end
 
   defp handled_fetched_value(:not_found, conn, _config), do: {conn, nil}

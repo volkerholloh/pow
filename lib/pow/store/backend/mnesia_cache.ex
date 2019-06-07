@@ -74,6 +74,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
     invalidators = update_invalidators(config, invalidators, key, ttl)
     table_update(config, key, value, ttl)
 
+    Pow.telemetry_event(config, __MODULE__, :cache, %{}, %{key: key, value: value, ttl: ttl})
+
     {:noreply, %{state | invalidators: invalidators}}
   end
 
@@ -81,6 +83,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
   def handle_cast({:delete, config, key}, %{invalidators: invalidators} = state) do
     invalidators = clear_invalidator(invalidators, key)
     table_delete(config, key)
+
+    Pow.telemetry_event(config, __MODULE__, :delete, %{}, %{key: key})
 
     {:noreply, %{state | invalidators: invalidators}}
   end
@@ -91,6 +95,8 @@ defmodule Pow.Store.Backend.MnesiaCache do
     invalidators = clear_invalidator(invalidators, key)
 
     table_delete(config, key)
+
+    Pow.telemetry_event(config, __MODULE__, :invalidate, %{}, %{key: key})
 
     {:noreply, %{state | invalidators: invalidators}}
   end

@@ -7,6 +7,17 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
   @default_config [namespace: "pow:test", ttl: :timer.hours(1)]
 
   setup do
+    pid    = self()
+    events = [
+      [:pow, MnesiaCache, :cache],
+      [:pow, MnesiaCache, :delete],
+      [:pow, MnesiaCache, :invalidate]
+    ]
+
+    :telemetry.attach_many("event-handler-#{inspect pid}", events, fn event, measurements, metadata, send_to: pid ->
+      send(pid, {:event, event, measurements, metadata})
+    end, send_to: pid)
+
     :mnesia.kill()
 
     File.rm_rf!("tmp/mnesia")
@@ -21,7 +32,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     assert MnesiaCache.get(@default_config, "key") == :not_found
 
     MnesiaCache.put(@default_config, "key", "value")
-    :timer.sleep(100)
+    assert_receive {:event, [:pow, MnesiaCache, :cache], _measurements, %{key: "key", value: "value"}}
     assert MnesiaCache.get(@default_config, "key") == "value"
 
     restart(pid, @default_config)
@@ -29,7 +40,7 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     assert MnesiaCache.get(@default_config, "key") == "value"
 
     MnesiaCache.delete(@default_config, "key")
-    :timer.sleep(100)
+    assert_receive {:event, [:pow, MnesiaCache, :delete], _measurements, %{key: "key"}}
     assert MnesiaCache.get(@default_config, "key") == :not_found
   end
 
@@ -53,13 +64,13 @@ defmodule Pow.Store.Backend.MnesiaCacheTest do
     MnesiaCache.put(config, "key", "value")
     :timer.sleep(50)
     assert MnesiaCache.get(config, "key") == "value"
-    :timer.sleep(100)
+    assert_receive {:event, [:pow, MnesiaCache, :invalidate], _measurements, %{key: "key"}}
     assert MnesiaCache.get(config, "key") == :not_found
 
     MnesiaCache.put(config, "key", "value")
     restart(pid, config)
     assert MnesiaCache.get(config, "key") == "value"
-    :timer.sleep(100)
+    assert_receive {:event, [:pow, MnesiaCache, :invalidate], _measurements, %{key: "key"}}
     assert MnesiaCache.get(config, "key") == :not_found
   end
 
