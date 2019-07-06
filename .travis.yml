@@ -9,6 +9,7 @@ jobs:
       elixir: 1.6
       otp_release: 20.0
       script: &test_scripts
+        - epmd -daemon # To be able to run `:slave.start/3`
         - mix test
         - MIX_ENV=test mix credo --ignore design.tagtodo
     - stage: test
